@@ -80,20 +80,35 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Enviar los datos al backend
-      const response = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem('token')}` },
-        body: JSON.stringify(lead)
-      });
+      // Validar que haya token antes de enviar
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('No tienes sesión activa. Por favor, inicia sesión nuevamente.');
+        return;
+      }
 
-      const result = await response.json();
-      if (response.ok) {
+      let response, result;
+      try {
+        response = await fetch("/api/leads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify(lead)
+        });
+        result = await response.json();
+      } catch (err) {
+        alert('Error de red al intentar guardar el lead. Intenta de nuevo.');
+        return;
+      }
+
+      if (response.ok && result.ok) {
         alert("Lead guardado con éxito");
         cargarDatosDesdeServidor(); // vuelve a pintar con el nuevo lead
         form.reset();
       } else {
-        alert("Hubo un error al guardar el lead.");
-        console.error(result);
+        // Mostrar mensaje de error del backend si existe
+        let mensaje = (result && result.error) ? result.error : 'Hubo un error al guardar el lead.';
+        alert(mensaje);
+        if (result) console.error(result);
       }
     });
   }
