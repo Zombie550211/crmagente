@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CRM Agente</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-minimal/minimal.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <style>
+    :root {
+      --primary: #2196f3;
+      --primary-dark: #1976d2;
+      --accent: #19b6f9;
+      --background: #f3f7fa;
+      --text-main: #24334d;
+      --gray-light: #f8fbff;
+      --sidebar-bg: #fff;
+      --sidebar-shadow: 2px 0 12px #0001;
+      --border-radius: 16px;
+      --card-shadow: 0 4px 20px #0002, 0 1.5px 3px #19b6f922;
+    }
+    html, body {height:100%;margin:0;padding:0;}
+    body {
+      background: var(--background);
+      font-family:'Segoe UI', 'Roboto', 'Montserrat', Arial, sans-serif;
+      min-height:100vh;
+      color: var(--text-main);
+      height: 100vh;
+      overflow: hidden; padding-bottom: 32px;
+  margin-bottom: 20px;
+    }
+    .topbar {
+      background: var(--primary);
+      color: #fff;
+      padding: 0.9em 2em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.11em;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      box-shadow: 0 2px 10px #2196f320;
+    }
+    .topbar a.logout {
+      color: #fff !important;
+      font-weight: 700;
+      text-decoration: none;
+      transition: color 0.2s;
+      border-bottom: 1.5px solid transparent;
+    }
+    .topbar a.logout:hover {
+      color: #ffe082 !important;
+      border-bottom: 1.5px solid #ffe082;
+    }
+    .container {
+      display: flex;
+      align-items: flex-start;
+      width: 100vw;
+      height: calc(100vh - 56px);
+      min-height: 0;
+      background: linear-gradient(90deg, #f8fbff 0%, #f6fafd 100%);
+      overflow: hidden; padding-bottom: 32px;
+  margin-bottom: 20px;
+    }
+    .sidebar {
+      width: 230px;
+      background: var(--sidebar-bg);
+      height: 100%;
+      border-radius: 0 18px 18px 0;
+      box-shadow: var(--sidebar-shadow);
+      padding: 2em 0.8em 2em 2em;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      font-size: 1.09em;
+      font-weight: 500;
+      z-index: 3;
+      min-height: 0;
+    }
+    .sidebar h3 {
+      font-size: 1.14em;
+      margin-bottom: 1.5em;
+      font-weight: 700;
+      color: var(--primary-dark);
+      letter-spacing: 0.04em;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      width: 100%;
+    }
+    .sidebar li {margin: 1.2em 0;}
+    .sidebar a {
+      color: var(--primary);
+      text-decoration: none;
+      display: block;
+      padding: 0.7em 1.2em;
+      border-radius: 10px;
+      transition: background 0.22s, color 0.22s, border-left 0.18s;
+      font-weight: 700;
+      width: 100%;
+      box-sizing: border-box;
+      letter-spacing: 0.03em;
+    }
+    .sidebar a.active, .sidebar a:focus {
+      background: linear-gradient(90deg, #e3f2fd 0%, #e8f5ff 100%);
+      color: var(--primary-dark);
+      border-left: 5px solid var(--accent);
+      box-shadow:0 2px 8px #2196f922;
+    }
+    .main-content {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      padding: 0 0 0 0.6em;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      min-height: 0;
+      overflow: hidden; padding-bottom: 32px;
+  margin-bottom: 20px;
+    }
+    .dashboard-flex-row {
+      display: flex;
+      flex-direction: row;
+      gap: 2.5em;
+      height: 100%;
+      min-height: 0;
+      align-items: flex-start;
+    }
+    .crm-form-section {
+      max-width: 510px;
+      width: 100%;
+      align-self: flex-start;
+      padding: 0;
+      height: 100%;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    .crm-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 10px 2px;
+    }
+    .crm-form-group {
+      background: #fff;
+      border-radius: var(--border-radius);
+      padding: 22px 28px 16px 28px;
+      box-shadow: var(--card-shadow);
+    }
+    .crm-form-label {
+      font-weight: 700;
+      color: #03559d;
+      font-size: 1.13em;
+      margin-bottom: 6px;
+    }
+    .crm-form-label .crm-form-req {
+      color: #e53935;
+    }
+    .crm-form-input, .crm-form-select {
+      background: var(--gray-light);
+      border: none;
+      border-bottom: 2px solid #c5d2e7;
+      border-radius: 0.7em 0.7em 0 0;
+      padding: 13px 10px;
+      font-size: 1.12em;
+      outline: none;
+      transition: border-color 0.17s, box-shadow 0.16s;
+    }
+    .crm-form-input:focus, .crm-form-select:focus {
+      border-bottom-color: var(--primary);
+      box-shadow: 0 0 0 2px #19b6f944;
+      background: #eaf6ff;
+    }
+    .crm-form-submit-btn {
+      background: linear-gradient(90deg, var(--primary) 60%, var(--accent) 100%);
+      color: #fff;
+      border: none;
+      padding: 16px 24px;
+      border-radius: 11px;
+      font-size: 1.15em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .22s;
+      margin-top: 1em;
+      box-shadow: 0 4px 16px #2196f322;
+    }
+    .crm-form-submit-btn:hover {
+      box-shadow: 0 6px 22px #2196f344;
+    }
+    .crm-form-radio-group {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 8px 20px;
+    }
+    .radio-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px 15px;
+    }
+
+    .crm-form-radio-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.05em;
+      cursor: pointer;
+    }
+    .crm-form-radio-input {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--primary);
+    }
+    .charts-section {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5em;
+      height: 100%;
+    }
+    .charts-filter {
+      margin-bottom: 18px;
+      padding: 13px 24px;
+      background: #f8fbff;
+      border-radius: 11px;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      box-shadow: 0 2px 10px #2196f911;
+    }
+    .charts-filter label { font-weight: 700; margin-bottom: 0; color: var(--primary-dark);}
+    .charts-filter input[type="date"] { padding: 8px 13px; border-radius: 8px; border: 1px solid #b4c5d4; font-size:1em;}
+    .charts-filter button {
+      background: var(--primary) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' class='feather feather-bar-chart-2'%3E%3Cline x1='18' y1='20' x2='18' y2='10'/%3E%3Cline x1='12' y1='20' x2='12' y2='4'/%3E%3Cline x1='6' y1='20' x2='6' y2='14'/%3E%3C/svg%3E") no-repeat center center;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0;
+      width: 38px;
+      height: 38px;
+      font-size: 0;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .charts-filter button:hover { background: var(--primary-dark); }
+    .chart-container {
+  min-height: 320px;
+  padding: 10px 12px;
+      background: #fff;
+      padding: 22px 28px;
+      border: 1px solid #e2e8f0;
+      border-radius: 13px;
+      box-shadow: 0 2px 10px #2196f911;
+      flex: 1;
+    }
+    .no-data-msg { color: #d32f2f; font-weight: bold; text-align: center; margin-top: 10px;}
+    .costumer-section { width: 100%; }
+    .costumer-filters-elegant {
+      background: #f8fbff;
+      border-radius: 14px;
+      border: 1.5px solid #e2e8f0;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 8px #1976d211;
+      padding: 18px 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+    }
+    .costumer-filter-input {
+      padding: 10px 14px;
+      border-radius: 9px;
+      border: 1.5px solid #b4c5d4;
+      font-size: 1.02em;
+    }
+    .costumer-btn-elegant {
+      padding: 10px 22px;
+      background: linear-gradient(90deg,#1976d2 60%,#2196f3 100%);
+      color: #fff;
+      border: none;
+  font-size: 1.10em;
+  border: none;
+  border-radius: 999px !important;
+  padding: 1.1em 1.5em;
+  margin: 0 0.25em;
+  box-shadow: 0 2px 10px #1976d222, 0 1.5px 6px #2196f911;
+  letter-spacing: 0.01em;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+.costumer-table-elegant {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px #1976d211;
+  overflow: hidden; padding-bottom: 32px;
+  margin-bottom: 20px;
+}
+.costumer-table-elegant thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: linear-gradient(90deg, #1976d2 60%, #2196f3 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.08em;
+  letter-spacing: 0.04em;
+  border: none;
+  padding: 13px 8px;
+  text-align: left;
+}
+.costumer-table-elegant tbody tr {
+  transition: background 0.18s;
+  border: none;
+}
+.costumer-table-elegant tbody tr:nth-child(even) {
+  background: #f8fbff;
+}
+.costumer-table-elegant tbody tr:hover {
+  background: #e3f2fd !important;
+}
+.costumer-table-elegant td {
+  border: none;
+  padding: 11px 8px;
+  font-size: 1.01em;
+  color: #24334d;
+  vertical-align: middle;
+  word-break: break-word;
+  max-width: 270px;
+}
+.costumer-table-elegant td.comentario {
+  position: relative;
+  cursor: pointer;
+}
+.costumer-table-elegant td.comentario:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  top: 120%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #24334d;
+  border: 1px solid #b4c5d4;
+  border-radius: 7px;
+  padding: 10px 17px;
+  box-shadow: 0 4px 16px #1976d211;
+  font-size: 0.98em;
+  z-index: 20;
+  min-width: 180px;
+  max-width: 350px;
+  pointer-events: none;
+  white-space: pre-line;
+}
+.costumer-table-elegant td, .costumer-table-elegant th {
+  border-radius: 0 !important;
+}
+.costumer-table-elegant thead th:first-child {
+  border-top-left-radius: 16px;
+}
+.costumer-table-elegant thead th:last-child {
+  border-top-right-radius: 16px;
+}
+.costumer-table-elegant tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 16px;
+}
+.costumer-table-elegant tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 16px;
+}
+.costumer-table-elegant .agrupador-dia {
+  background: #e3f2fd;
+  font-weight: bold;
+  color: #1976d2;
+  font-size: 1.04em;
+  letter-spacing: 0.03em;
+  border-top: 2px solid #b4c5d4;
+  border-bottom: 2px solid #b4c5d4;
+}
+
+.costumer-table-elegant .comentario-btn-minimal, .costumer-table-elegant .acciones-btn-minimal {
+  background: none; border: none; color: #1976d2; font-size: 1.05em; padding: 5px 7px; border-radius: 7px;
+  transition: background 0.18s, color 0.18s;
+  margin-right: 3px;
+  cursor: pointer;
+}
+.costumer-table-elegant .comentario-btn-minimal:hover, .costumer-table-elegant .acciones-btn-minimal:hover { background: #e3f2fd; color: #0d47a1; }
+.costumer-table-elegant .acciones-btn-minimal.borrar { color: #e53935; }
+.costumer-table-elegant .acciones-btn-minimal.borrar:hover { background: #ffebee; color: #b71c1c; }
+.costumer-table-elegant .comentario-tooltip-minimal { margin-left:5px; color:#1976d2; cursor:pointer; position:relative; }
+.costumer-table-elegant .comentario-tooltip-minimal:hover::after {
+  content: attr(data-tooltip);
+  white-space: pre-line;
+  position: absolute;
+  left: 50%;
+  top: 120%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #24334d;
+  border: 1px solid #b4c5d4;
+  border-radius: 7px;
+  padding: 10px 17px;
+  box-shadow: 0 4px 16px #1976d211;
+  font-size: 0.98em;
+  z-index: 20;
+  min-width: 180px;
+  max-width: 350px;
+  pointer-events: none;
+}
+
+
+.costumer-table-elegant thead th {
+  background: #5b8db8;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.09em;
+  border: none;
+  padding: 1.05em 0.7em;
+  text-align: center;
+  box-shadow: 0 2px 8px #0001;
+  letter-spacing: 0.01em;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  transition: background 0.16s, color 0.16s;
+}
+.costumer-table-elegant thead th:first-child {
+  border-top-left-radius: 11px;
+}
+.costumer-table-elegant thead th:last-child {
+  border-top-right-radius: 11px;
+}
+.costumer-table-elegant thead tr {
+  display: table-row;
+}
+.costumer-table-elegant tbody tr {
+  transition: background 0.18s;
+}
+.costumer-table-elegant tbody tr:nth-child(even) {
+  background: #f2f6fa;
+}
+.costumer-table-elegant tbody tr:nth-child(odd) {
+  background: #fff;
+}
+.costumer-table-elegant tbody tr:hover {
+  background: #e3f1fd;
+  cursor: pointer;
+}
+.costumer-table-elegant td, .costumer-table-elegant th {
+  padding: 10px 12px;
+  border-radius: 7px;
+}
+.costumer-table-elegant td {
+  border-bottom: 1px solid #e3e9f3;
+  font-size: 0.99em;
+}
+.costumer-filters-elegant {
+  background: #f8fbff;
+  border-radius: 14px;
+  border: 1.5px solid #e2e8f0;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 8px #1976d211;
+  padding: 18px 22px 10px 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+.costumer-filter-input {
+  border-radius: 7px;
+  border: 1.5px solid #b4c5d4;
+  padding: 9px 13px;
+  font-size: 1em;
+  background: #fafdff;
+  transition: border 0.15s;
+  color: var(--text-main);
+  min-width: 180px;
+}
+.costumer-filter-input:focus {
+  outline: 2px solid var(--primary);
+  border-color: var(--primary);
+  background: #eaf6ff;
+}
+.costumer-btn-elegant {
+  padding: 10px 22px;
+  background: linear-gradient(90deg,#1976d2 60%,#2196f3 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1.04em;
+  box-shadow: 0 2px 8px #1976d211;
+  transition: background 0.22s, box-shadow 0.18s;
+}
+.costumer-btn-elegant:hover {
+  background: #1976d2;
+  box-shadow: 0 4px 16px #1976d222;
+}
+.costumer-btn-clear {
+  background: #eaf4fb !important;
+  color: var(--primary) !important;
+  border: 1.5px solid #b4c5d4 !important;
+}
+.costumer-btn-clear:hover {
+  background: #dbefff !important;
+  color: #1976d2 !important;
+}
+@media (max-width: 1200px) {
+  .dashboard-flex-row {flex-direction:column; height:auto;}
+  .crm-form-section{max-width:100%;margin-bottom:2.2em; height:auto; max-height:none; min-height:0;}
+  .charts-section{min-width:0;}
+  .costumer-table-elegant {min-width: 900px;}
+}
+html, body, .container, .main-content, .dashboard-flex-row, .crm-form-section, .charts-section {
+  min-height: 0 !important;
+}
+/* Se agregó la llave de cierre faltante */
+
+    .costumer-table {
+      border-collapse:separate;
+      border-spacing:0;
+      width:100%;
+      min-width:1350px;
+      font-size: 1.01em;
+    }
+    .costumer-table thead th {
+      background: #2196f3;
+      color: #fff;
+      font-weight: 800;
+      font-size: 1.10em;
+      border-bottom: 2px solid #1976d2;
+      text-align: left;
+      position: sticky;
+    .costumer-table-wrapper::-webkit-scrollbar {
+      height: 8px;
+      background: #e3f2fd;
+      border-radius: 8px;
+    }
+    .costumer-table-wrapper::-webkit-scrollbar-thumb {
+      background: #b3e0ff;
+      border-radius: 8px;
+    }
+    @media (max-width: 1200px) {
+      .dashboard-flex-row {flex-direction:column; height:auto;}
+      .crm-form-section{max-width:100%;margin-bottom:2.2em; height:auto; max-height:none; min-height:0;}
+      .charts-section{min-width:0;}
+    }
+    html, body, .container, .main-content, .dashboard-flex-row, .crm-form-section, .charts-section {
+      min-height: 0 !important;
+    }
+    /* Se agregó la llave de cierre faltante */
+  }
+  .td-ellipsis {
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.td-nowrap {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.costumer-table-elegant th, .costumer-table-elegant td {
+  text-align: center;
+  vertical-align: middle;
+  padding: 7px 9px;
+  border-bottom: 1.5px solid #d5e4f3;
+  border-right: 1px solid #e3e9f3;
+}
+.costumer-table-elegant th {
+  position: sticky;
+  top: 0;
+  background: #5b8db8;
+  z-index: 2;
+}
+.costumer-table-elegant tbody tr:nth-child(even) {
+  background: #f5f9fc;
+}
+.costumer-table-elegant tbody tr:nth-child(odd) {
+  background: #fff;
+}
+.costumer-table-elegant tbody tr:hover {
+  background: #e3f1fd;
+}
+.costumer-table-wrapper {
+  overflow-x: auto;
+  min-width: 900px;
+}
+</style>
+  <link rel="stylesheet" href="css/costumer-table-clean.css">
+  <link rel="stylesheet" href="css/costumer-table-actions.css">
+  <link rel="stylesheet" href="css/costumer-table-comments.css">
+</head>
+<body>
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <i class="fas fa-user-tie" style="font-size:1.25em;color:#fff;margin-right:6px;"></i>
+      <b>CRM Agente</b>
+    </div>
+    <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+  </div>
+  <div class="container">
+    <div class="sidebar">
+      <h3>Menú</h3>
+      <ul>
+        <li><a href="#" class="tab-btn" data-tab="inicioTab" id="tabInicio"><i class="fas fa-home"></i> Inicio</a></li>
+        <li><a href="#" class="tab-btn" data-tab="leadTab" id="tabLead"><i class="fas fa-user-plus"></i> Lead</a></li>
+
+        <li><a href="#" class="tab-btn" data-tab="costumerTab" id="tabCostumer"><i class="fas fa-users"></i> Costumer</a></li>
+      </ul>
+    </div>
+    <div class="main-content">
+      <!-- SECCIÓN INICIO -->
+      <div class="inicio-section" id="inicioTab" style="display: flex; align-items: center; justify-content: center; height: 80vh; width: 100%;">
+        <div style="text-align:center;">
+          <i class="fas fa-tools" style="font-size:3.5em;color:#1976d2;margin-bottom:18px;"></i>
+          <h1 style="font-size:2.2em;color:#1976d2;margin-bottom:10px;">En construcción</h1>
+          <div style="font-size:1.3em;color:#888;">By Zombie</div>
+        </div>
+      </div>
+      <div class="dashboard-flex-row" id="leadTab">
+
+        <!-- FORMULARIO LEAD -->
+        <section class="crm-form-section" id="form-panel">
+          <form id="lead-form" class="crm-form" autocomplete="off" novalidate>
+                        <!-- AQUÍ VAN TODOS TUS CAMPOS DE FORMULARIO, REVISA Y AMPLÍA HASTA LA LÍNEA 489 APROX. -->
+            <div class="crm-form-group required" data-field="nombre_cliente">
+              <label class="crm-form-label">Nombre cliente <span class="crm-form-req">*</span></label>
+              <input type="text" name="nombre_cliente" class="crm-form-input" placeholder="Tu respuesta" required />
+            </div>
+            <div class="crm-form-group required" data-field="telefono_principal">
+              <label class="crm-form-label">Teléfono principal <span class="crm-form-req">*</span></label>
+              <input type="text" name="telefono_principal" class="crm-form-input" placeholder="Tu respuesta" required />
+            </div>
+            <div class="crm-form-group" data-field="telefono_alterno">
+              <label class="crm-form-label">Teléfono Alterno</label>
+              <input type="text" name="telefono_alterno" class="crm-form-input" placeholder="Tu respuesta" />
+            </div>
+            <div class="crm-form-group required" data-field="numero_cuenta">
+              <label class="crm-form-label">Numero de cuenta <span class="crm-form-req">*</span></label>
+              <input type="text" name="numero_cuenta" class="crm-form-input" placeholder="Tu respuesta" required />
+            </div>
+            <div class="crm-form-group required" data-field="autopago">
+              <label class="crm-form-label">Autopago <span class="crm-form-req">*</span></label>
+              <select name="autopago" class="crm-form-select" required>
+                <option value="">Elige</option>
+                <option value="SI">SI</option>
+                <option value="NO">NO</option>
+              </select>
+            </div>
+            <div class="crm-form-group required" data-field="direccion">
+              <label class="crm-form-label">Dirección <span class="crm-form-req">*</span></label>
+              <input type="text" name="direccion" class="crm-form-input" placeholder="Tu respuesta" required />
+            </div>
+            <div class="crm-form-group required" data-field="tipo_servicios">
+              <label class="crm-form-label">Tipo de servicios <span class="crm-form-req">*</span></label>
+              <select name="tipo_servicios" class="crm-form-select" required>
+                <option value="">Elige</option>
+                <option value="AT&T AIR">AT&T AIR</option>
+                <option value="AT&T INTERNET 1 GIGA O MAS">AT&T INTERNET 1 GIGA O MAS</option>
+                <option value="AT&T INTERNET DE 500 MBPS">AT&T INTERNET DE 500 MBPS</option>
+                <option value="AT&T INTERNET DE 300 MBPS">AT&T INTERNET DE 300 MBPS</option>
+                <option value="AT&T INTERNET DE 100 MBPS">AT&T INTERNET DE 100 MBPS</option>
+                <option value="AT&T INTERNET DE 50 Y 75 MBPS">AT&T INTERNET DE 50 Y 75 MBPS</option>
+                <option value="AT&T INTERNET MENOS DE 50">AT&T INTERNET MENOS DE 50</option>
+                <option value="FRONTIER 7 GIG">FRONTIER 7 GIG</option>
+                <option value="FRONTIER 5 GIG">FRONTIER 5 GIG</option>
+                <option value="FRONTIER 2 GIG">FRONTIER 2 GIG</option>
+                <option value="FRONTIER 1 GIG">FRONTIER 1 GIG</option>
+                <option value="FRONTIER 500 MBPS">FRONTIER 500 MBPS</option>
+                <option value="FRONTIER UNDER 500 MBPS">FRONTIER UNDER 500 MBPS</option>
+                <option value="UNLIMITED DIGITAL VOICE">UNLIMITED DIGITAL VOICE</option>
+                <option value="Centurylink/Lumen 900MBPS+">Centurylink/Lumen 900MBPS+</option>
+                <option value="Centurylink/Lumen 100-899MBPS">Centurylink/Lumen 100-899MBPS</option>
+                <option value="Centurylink/Lumen 10-99MBPS">Centurylink/Lumen 10-99MBPS</option>
+                <option value="Ziply Fiber 10GIG">Ziply Fiber 10GIG</option>
+                <option value="Ziply Fiber 5GIG">Ziply Fiber 5GIG</option>
+                <option value="Ziply Fiber 2GIG">Ziply Fiber 2GIG</option>
+                <option value="Ziply Fiber 1GIG">Ziply Fiber 1GIG</option>
+                <option value="Ziply Fiber 300/300">Ziply Fiber 300/300</option>
+                <option value="Ziply Fiber 200/200">Ziply Fiber 200/200</option>
+                <option value="SPECTRUM 2 GIGA">SPECTRUM 2 GIGA</option>
+                <option value="SPECTRUM 1 GIGA">SPECTRUM 1 GIGA</option>
+                <option value="SPECTRUM PREMIER">SPECTRUM PREMIER</option>
+                <option value="SPECTRUM ADVANTAGE">SPECTRUM ADVANTAGE</option>
+                <option value="SPECTRUM 500MBPS">SPECTRUM 500MBPS</option>
+                <option value="SPECTRUM 400 MBPS">SPECTRUM 400 MBPS</option>
+                <option value="WOW! 1200MBPS">WOW! 1200MBPS</option>
+                <option value="WOW! 1000MBPS">WOW! 1000MBPS</option>
+                <option value="WOW! 500MBPS">WOW! 500MBPS</option>
+                <option value="WOW! 200MBPS">WOW! 200MBPS</option>
+                <option value="OPTIMUM BROADBAND 5 GBPS">OPTIMUM BROADBAND 5 GBPS</option>
+                <option value="OPTIMUM BROADBAND 2 GBPS">OPTIMUM BROADBAND 2 GBPS</option>
+                <option value="OPTIMUM BROADBAND 1 GBPS">OPTIMUM BROADBAND 1 GBPS</option>
+                <option value="OPTIMUM BROADBAND 500 MBPS">OPTIMUM BROADBAND 500 MBPS</option>
+                <option value="VIVINT">VIVINT</option>
+                <option value="VIDEO SELECT">VIDEO SELECT</option>
+                <option value="ADDITIONAL DOUBLE PLAY">ADDITIONAL DOUBLE PLAY</option>
+                <option value="ADDITIONAL TRIPLE PLAY">ADDITIONAL TRIPLE PLAY</option>
+                <option value="INTERNET">INTERNET</option>
+                <option value="DIRECTV VIA INTERNET">DIRECTV VIA INTERNET</option>
+                <option value="DIRECTV VIA SATELITE">DIRECTV VIA SATELITE</option>
+                <!-- ...agrega los productos que falten... -->
+              </select>
+            </div>
+            <div class="crm-form-group required" data-field="sistema">
+              <label class="crm-form-label">Sistema <span class="crm-form-req">*</span></label>
+              <select name="sistema" class="crm-form-select" required>
+                <option value="">Elige</option>
+                <option value="sistema1">SARA </option>
+                <option value="sistema2">OPUS</option>
+                <option value="Sistema3"> B.O</option>
+                <option value="Sistema4">N.A</option>
+                <option value="Sistema5">CHUZO</option>
+              </select>
+            </div>
+            <div class="crm-form-group required" data-field="riesgo">
+              <label class="crm-form-label">Riesgo <span class="crm-form-req">*</span></label>
+              <select name="riesgo" class="crm-form-select" required>
+                <option value="">Elige</option>
+                <option value="LOW">LOW</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="HIGH">HIGH</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div class="crm-form-group required" data-field="dia_venta">
+              <label class="crm-form-label">Dia de venta <span class="crm-form-req">*</span></label>
+              <input type="date" name="dia_venta" class="crm-form-input" required />
+            </div>
+            <div class="crm-form-group required" data-field="dia_instalacion">
+              <label class="crm-form-label">Dia de instalacion <span class="crm-form-req">*</span></label>
+              <input type="date" name="dia_instalacion" class="crm-form-input" required />
+            </div>
+            <div class="crm-form-group required" data-field="status">
+              <label class="crm-form-label">Status <span class="crm-form-req">*</span></label>
+              <div class="crm-form-radio-group radio-grid">
+                <label class="crm-form-radio-label" for="status_pending">
+                  <input type="radio" id="status_pending" name="status" value="PENDING" class="crm-form-radio-input" checked>
+                  PENDING
+                </label>
+                <label class="crm-form-radio-label" for="status_repro">
+                  <input type="radio" id="status_repro" name="status" value="REPRO" class="crm-form-radio-input">
+                  REPRO
+                </label>
+              </div>
+            </div>
+            <div class="crm-form-group required" data-field="servicios">
+              <label class="crm-form-label">Servicios <span class="crm-form-req">*</span></label>
+              <select name="servicios" class="crm-form-select" required>
+                <option value="">Elige</option>
+                <option value="servicio1">VIDEO DIRECTV VIA INTERNET</option>
+                <option value="servicio2">VIDEO DIRECTV VIA SATELITE</option>
+                <option value="servicio3">ATT AIR</option>
+                <option value="servicio4">ATT 18-25MB</option>
+                <option value="servicio5">ATT 50-100MB</option>
+                <option value="servicio6">ATT 300-500MB</option>
+                <option value="servicio7">ATT 1G+</option>
+                <option value="servicio8">MOBILITY SPECTRUM</option>
+                <option value="servicio9">SIM SPECTRUM</option>
+                <option value="servicio10">FRONTIER 200MB</option>
+                <option value="servicio11">FRONTIER 500MB</option>
+                <option value="servicio12">FRONTIER 1G</option>
+                <option value="servicio13">FRONTIER 2G+</option>
+                <option value="servicio14">SPECTRUM 500MB - 1G</option>
+                <option value="servicio15">SPECTRUM 2G</option>
+                <option value="servicio16">INTERNET OPTIMUN</option>
+                <option value="servicio17">INTERNET WOW</option>
+                <option value="servicio18">INTERNET ALTA FIBER</option>
+                <option value="servicio19">INTERNET WINDSTREAM</option>
+                <option value="servicio20">INTERNET HUGHESNET</option>
+                <option value="servicio21">INTERNET VIASAT</option>
+                <option value="servicio22">INTERNET CONSOLIDATE</option>
+                <option value="servicio23">INTERNET CENTURILINK</option>
+                <option value="servicio24">INTERNET METRONET</option>
+                <option value="servicio25">INTERNET ZYPLYFIBER</option>
+                <option value="servicio26">INTERNET HAWAIIAN</option>
+                <option value="servicio27">VIDEO SELECT SPECTRUM</option>
+                <option value="servicio28">DOUBLE PLAY SPECTRUM</option>
+                <option value="servicio29">BRIGHTSPEED 10-100MB</option>
+                <option value="servicio30">BRIGHTSPEED 100-900MB</option>
+              </select>
+            </div>
+            <div class="crm-form-group required" data-field="mercado">
+              <label class="crm-form-label">Mercado <span class="crm-form-req">*</span></label>
+              <select name="mercado" class="crm-form-select" required>
+                <option value="">Elige</option>
+                <option value="ICON">ICON</option>
+                <option value="BAMO">BAMO</option>
+              </select>
+            </div>
+            <div class="crm-form-group required" data-field="supervisor">
+              <label class="crm-form-label">Supervisor <span class="crm-form-req">*</span></label>
+              <select name="supervisor" class="crm-form-select" required>
+                <option value="">Elige</option>
+                <option value="IRANIA">IRANIA</option>
+                <option value="ROBERTO">ROBERTO</option>
+                <option value="MARISOL">MARISOL</option>
+                <option value="PLEITEZ">PLEITEZ</option>
+                <option value="RANDAL">RANDAL</option>
+                <option value="JONATHAN">JONATHAN</option>
+              </select>
+            </div>
+            <div class="crm-form-group required" data-field="comentario">
+              <label class="crm-form-label">Comentario <span class="crm-form-req">*</span></label>
+              <select name="comentario" class="crm-form-select" required>
+                <option value="">Elige</option>
+                <option value="ADQUIRIR SERVICIOS">ADQUIRIR SERVICIOS</option>
+                <option value="CANCELAR SERVICIO ANTERIOR">CANCELAR SERVICIO ANTERIOR</option>
+                <option value="QUITAR FEE $99.00">QUITAR FEE $99.00</option>
+                <option value="CREAR ORDEN DE INTERNET">CREAR ORDEN DE INTERNET</option>
+              </select>
+            </div>
+            <div class="crm-form-group required" data-field="motivo_llamada">
+              <label class="crm-form-label">¿Por que llamo el cliente? <span class="crm-form-req">*</span></label>
+              <div class="crm-form-radio-group radio-grid">
+                <label class="crm-form-radio-label"><input type="radio" class="crm-form-radio-input" name="motivo_llamada" value="FACTURACION_BILL" required> FACTURACIÓN / BILL</label>
+                <label class="crm-form-radio-label"><input type="radio" class="crm-form-radio-input" name="motivo_llamada" value="PROBLEMAS_INTERNET"> PROBLEMAS DE INTERNET</label>
+                <label class="crm-form-radio-label"><input type="radio" class="crm-form-radio-input" name="motivo_llamada" value="ADQUIRIR_SERVICIOS"> ADQUIRIR SERVICIOS</label>
+                <label class="crm-form-radio-label"><input type="radio" class="crm-form-radio-input" name="motivo_llamada" value="MUDANZA"> MUDANZA</label>
+                <label class="crm-form-radio-label"><input type="radio" class="crm-form-radio-input" name="motivo_llamada" value="CANCELAR_SERVICIOS"> CANCELAR SERVICIOS</label>
+                <label class="crm-form-radio-label"><input type="radio" class="crm-form-radio-input" name="motivo_llamada" value="ATENCION_CLIENTE"> ATENCIÓN AL CLIENTE</label>
+              </div>
+            </div>
+            <div class="crm-form-group required" data-field="zip_code">
+              <label class="crm-form-label">ZIP CODE <span class="crm-form-req">*</span></label>
+              <input type="text" name="zip_code" class="crm-form-input" placeholder="Tu respuesta" required />
+            </div>
+            <div class="crm-form-group required" data-field="puntaje">
+              <label class="crm-form-label">Puntaje <span class="crm-form-req">*</span></label>
+              <select name="puntaje" class="crm-form-select" required>
+                <option value="">Elige</option>
+                <option value="0.35">0.35</option>
+                <option value="1.50">1.50</option>
+                <option value="1.0">1.0</option>
+                <option value="0.25">0.25</option>
+              </select>
+            </div>
+            <button class="crm-form-submit-btn" type="submit" style="margin-bottom:32px;"><i class="fas fa-save"></i> Guardar Lead</button>
+          </form>
+          <script src="js/core/script.js"></script> <!-- Asegura que script.js se cargue después del formulario -->
+        </section>
+        <!-- SECCIÓN DE GRÁFICAS -->
+        <section class="charts-section" id="charts-panel">
+          <div class="charts-filter">
+            <label for="fechaGraficas"><i class="fas fa-filter"></i> Filtrar gráficas por fecha:</label>
+            <input type="date" id="fechaGraficas" />
+            <button type="button"><i class="fas fa-chart-bar"></i> Ver gráficas</button>
+          </div>
+          <div class="chart-container">
+            <canvas id="ventasTeamChart" class="chart-canvas"></canvas>
+            <div id="no-data-team" class="no-data-msg" style="display:none">No hay datos para esta fecha</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="productosChart" class="chart-canvas"></canvas>
+            <div id="no-data-producto" class="no-data-msg" style="display:none">No hay datos para esta fecha</div>
+          </div>
+        </section>
+      </div>
+      <!-- SECCIÓN COSTUMER (INICIALMENTE OCULTA) -->
+      <div class="costumer-section" id="costumerTab" style="display: none; margin-top:2em;">
+  <div class="dashboard-cards-row" id="costumer-summary-cards" style="display:flex;gap:36px;margin-bottom:2.2em;flex-wrap:wrap;">
+  <div class="dashboard-card" style="flex:1 1 220px;min-width:220px;max-width:300px;background:#fff;border-radius:18px;box-shadow:0 4px 20px #0002,0 1.5px 3px #19b6f922;padding:1.5em 1.3em 1.1em 1.3em;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;">
+    <span style="font-size:1.05em;color:#1976d2;font-weight:600;margin-bottom:0.3em;">Ventas Hoy</span>
+    <span id="costumer-ventas-hoy" style="font-size:2.1em;font-weight:700;color:#24334d;">0</span>
+  </div>
+  <div class="dashboard-card" style="flex:1 1 220px;min-width:220px;max-width:300px;background:#fff;border-radius:18px;box-shadow:0 4px 20px #0002,0 1.5px 3px #19b6f922;padding:1.5em 1.3em 1.1em 1.3em;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;">
+    <span style="font-size:1.05em;color:#1976d2;font-weight:600;margin-bottom:0.3em;">Clientes pendientes</span>
+    <span id="costumer-clientes-pendientes" style="font-size:2.1em;font-weight:700;color:#24334d;">0</span>
+  </div>
+  <div class="dashboard-card" style="flex:1 1 220px;min-width:220px;max-width:300px;background:#fff;border-radius:18px;box-shadow:0 4px 20px #0002,0 1.5px 3px #19b6f922;padding:1.5em 1.3em 1.1em 1.3em;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;">
+    <span style="font-size:1.05em;color:#1976d2;font-weight:600;margin-bottom:0.3em;">Ventas Canceladas</span>
+    <span id="costumer-ventas-canceladas" style="font-size:2.1em;font-weight:700;color:#24334d;">0</span>
+  </div>
+  <div class="dashboard-card" style="flex:1 1 220px;min-width:220px;max-width:300px;background:#fff;border-radius:18px;box-shadow:0 4px 20px #0002,0 1.5px 3px #19b6f922;padding:1.5em 1.3em 1.1em 1.3em;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;">
+    <span style="font-size:1.05em;color:#1976d2;font-weight:600;margin-bottom:0.3em;">Ventas (mes)</span>
+    <span id="costumer-ventas-mes" style="font-size:2.1em;font-weight:700;color:#24334d;">0</span>
+  </div>
+</div>
+  <div class="costumer-table-wrapper costumer-table-elegant" style="overflow-x:auto; min-width:900px;">
+    <table class="costumer-table costumer-table-clean" style="width:100%;table-layout:auto;">
+      <thead>
+         <tr>
+           <th>Nombre cliente</th>
+           <th>Teléfono principal</th>
+           <th>Teléfono alterno</th>
+           <th>Numero de cuenta</th>
+           <th>Autopago</th>
+           <th>Dirección</th>
+           <th>Tipo de servicios</th>
+           <th>Sistema</th>
+           <th>Riesgo</th>
+           <th>Dia de venta</th>
+           <th>Dia de instalación</th>
+           <th>Status</th>
+           <th>Servicios</th>
+           <th>Mercado</th>
+           <th>Supervisor</th>
+           <th>Comentario</th>
+           <th>Motivo llamada</th>
+           <th>ZIP CODE</th>
+           <th>Puntaje</th>
+           <th style="min-width:130px;">Comentarios sobre la venta</th>
+           <th style="min-width:90px;">Acción</th>
+         </tr>
+       </thead>
+      <tbody id="costumer-tbody">
+        <!-- filas se llenan dinámicamente -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+      </div>
+    </div>
+  </div>
+  <script>
+    // USUARIO DEMO (puedes cambiar esto desde backend o login)
+    const usuario_actual = {
+      nombre: "Jose",
+      rol: "agente"
+    };
+
+    // Lógica de puntaje por producto/riesgo
+    function obtenerPuntaje(producto, riesgo) {
+      // DIRECTV lógica especial
+      if (/DIRECTV/i.test(producto)) {
+        if (riesgo === "LOW") return 1.00;
+        if (riesgo === "MEDIUM") return 0.35;
+        return 0;
+      }
+      // SPECTRUM 500MBPS o 400MBPS lógica especial
+      if (/SPECTRUM\s?500\s?MBPS/i.test(producto) || /SPECTRUM\s?400\s?MBPS/i.test(producto)) {
+        return 1.00;
+      }
+      // Tabla de productos (exacto)
+      const puntajes = {
+        // AT&T
+        "AT&T AIR": 0.35,
+        "AT&T INTERNET 1 GIGA O MAS": 1.50,
+        "AT&T INTERNET DE 500 MBPS": 1.25,
+        "AT&T INTERNET DE 300 MBPS": 1.25,
+        "AT&T INTERNET DE 100 MBPS": 1.00,
+        "AT&T INTERNET DE 50 Y 75 MBPS": 0.35,
+        "AT&T INTERNET MENOS DE 50": 0.25,
+        // FRONTIER
+        "FRONTIER 7 GIG": 1.50,
+        "FRONTIER 5 GIG": 1.50,
+        "FRONTIER 2 GIG": 1.25,
+        "FRONTIER 1 GIG": 1.25,
+        "FRONTIER 500 MBPS": 1.00,
+        "FRONTIER UNDER 500 MBPS": 0.35,
+        "UNLIMITED DIGITAL VOICE": 0.35,
+        // CenturyLink/Lumen
+        "Centurylink/Lumen 900MBPS+": 1.00,
+        "Centurylink/Lumen 100-899MBPS": 0.75,
+        "Centurylink/Lumen 10-99MBPS": 0.25,
+        // Ziply Fiber
+        "Ziply Fiber 10GIG": 1.25,
+        "Ziply Fiber 5GIG": 1.25,
+        "Ziply Fiber 2GIG": 1.00,
+        "Ziply Fiber 1GIG": 1.00,
+        "Ziply Fiber 300/300": 0.35,
+        "Ziply Fiber 200/200": 0.35,
+        // SPECTRUM
+        "SPECTRUM 2 GIGA": 1.25,
+        "SPECTRUM 1 GIGA": 1.00,
+        "SPECTRUM PREMIER": 1.00,
+        "SPECTRUM ADVANTAGE": 0.35,
+        // WOW!
+        "WOW! 1200MBPS": 0.35,
+        "WOW! 1000MBPS": 0.35,
+        "WOW! 500MBPS": 0.25,
+        "WOW! 200MBPS": 0.25,
+        // OPTIMUM
+        "OPTIMUM BROADBAND 5 GBPS": 1.25,
+        "OPTIMUM BROADBAND 2 GBPS": 1.25,
+        "OPTIMUM BROADBAND 1 GBPS": 1.00,
+        "OPTIMUM BROADBAND 500 MBPS": 0.35,
+        // VIVINT & VIDEO
+        "VIVINT": 0,
+        "VIDEO SELECT": 0.35,
+        "ADDITIONAL DOUBLE PLAY": 0.25,
+        "ADDITIONAL TRIPLE PLAY": 0.35,
+        // Otros
+        "INTERNET": 1.00
+      };
+      if (puntajes[producto]) return puntajes[producto];
+
+      // Si no match exacto, intenta por contiene
+      for (let key in puntajes) {
+        if (producto.toLowerCase().includes(key.toLowerCase())) {
+          return puntajes[key];
+        }
+      }
+      return 0;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Estado inicial: solo Inicio visible
+      document.getElementById('inicioTab').style.display = 'flex';
+      document.getElementById('leadTab').style.display = 'none';
+      document.getElementById('costumerTab').style.display = 'none';
+      document.getElementById('tabInicio').classList.add('active');
+      document.getElementById('tabLead').classList.remove('active');
+      document.getElementById('tabCostumer').classList.remove('active');
+      // TAB FUNCIONALIDAD
+      document.getElementById("tabInicio").addEventListener('click', function(e){
+        e.preventDefault();
+        document.getElementById('inicioTab').style.display = 'flex';
+        document.getElementById('leadTab').style.display = 'none';
+        document.getElementById('costumerTab').style.display = 'none';
+        this.classList.add('active');
+        document.getElementById("tabLead").classList.remove('active');
+        document.getElementById("tabCostumer").classList.remove('active');
+      });
+      document.getElementById("tabLead").addEventListener('click', function(e){
+        e.preventDefault();
+        document.getElementById('inicioTab').style.display = 'none';
+        document.getElementById('leadTab').style.display = '';
+        document.getElementById('costumerTab').style.display = 'none';
+        this.classList.add('active');
+        document.getElementById("tabInicio").classList.remove('active');
+        document.getElementById("tabCostumer").classList.remove('active');
+      });
+      document.getElementById("tabCostumer").addEventListener('click', function(e){
+        e.preventDefault();
+        document.getElementById('inicioTab').style.display = 'none';
+        document.getElementById('leadTab').style.display = 'none';
+        document.getElementById('costumerTab').style.display = '';
+        this.classList.add('active');
+        document.getElementById("tabInicio").classList.remove('active');
+        document.getElementById("tabLead").classList.remove('active');
+        fetchAndRenderLeads();
+      });
+    });
+
+    // Cargar y mostrar leads en la tabla de Costumer
+    async function fetchAndRenderLeads() {
+      const debugPanel = document.getElementById('debug-panel');
+      const debugStatus = document.getElementById('debug-status');
+      const debugData = document.getElementById('debug-data');
+      
+      debugPanel.style.display = 'block';
+      debugStatus.textContent = 'Estado: Realizando petición a /api/leads...';
+      debugStatus.style.color = '#eab308'; // Amarillo
+      debugData.textContent = 'Datos: N/A';
+
+      const tbody = document.getElementById('costumer-tbody');
+      tbody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:2em;"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>`;
+      try {
+        const response = await fetch('/api/leads', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (!response.ok) {
+          const errorData = await response.text();
+          debugStatus.textContent = 'Estado: Error en la respuesta del servidor (Código ' + response.status + ')';
+          debugStatus.style.color = '#ef4444'; // Rojo
+          debugData.textContent = 'Error: ' + errorData;
+          throw new Error('No se pudo obtener la lista de leads. Respuesta del servidor: ' + response.status);
+        }
+        const leads = await response.json();
+
+        debugStatus.textContent = 'Estado: Éxito. Datos recibidos.';
+        debugStatus.style.color = '#22c55e'; // Verde
+        debugData.textContent = JSON.stringify(leads, null, 2);
+
+        tbody.innerHTML = ""; // Limpiar la tabla antes de renderizar
+        if (leads.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:2em;">No hay registros para mostrar.</td></tr>`;
+          return;
+        }
+
+        leads.forEach((venta, idx) => {
+          const rowClass = idx % 2 === 0 ? 'costumer-row-striped' : '';
+          tbody.innerHTML += `
+            <tr class="${rowClass}">
+              <td>${venta.nombre_cliente || ''}</td>
+              <td>${venta.telefono_principal || ''}</td>
+              <td>${venta.telefono_alterno || ''}</td>
+              <td>${venta.numero_cuenta || ''}</td>
+              <td>${venta.autopago || ''}</td>
+              <td>${venta.direccion || ''}</td>
+              <td>${venta.tipo_servicios || ''}</td>
+              <td>${venta.sistema || ''}</td>
+              <td>${venta.riesgo || ''}</td>
+              <td>${venta.dia_venta || ''}</td>
+              <td>${venta.dia_instalacion || ''}</td>
+              <td>${venta.status || ''}</td>
+              <td>${venta.servicios || ''}</td>
+              <td>${venta.mercado || ''}</td>
+              <td>${venta.supervisor || ''}</td>
+              <td>${venta.comentario || ''}</td>
+              <td>${venta.motivo_llamada || ''}</td>
+              <td>${venta.zip_code || ''}</td>
+              <td>${venta.puntaje || 0}</td>
+              <td>${(venta.comentarios_venta || []).join('<br>')}</td>
+              <td>
+                <button class="btn-accion btn-editar" onclick="editarVenta('${venta._id}')"><i class="fas fa-comment-dots"></i></button>
+                <button class="btn-accion btn-borrar" onclick="borrarVenta('${venta._id}')"><i class="fas fa-trash-alt"></i></button>
+              </td>
+            </tr>
+          `;
+        });
+
+      } catch (error) {
+        // Actualizar panel de depuración en caso de error
+        debugStatus.textContent = 'Estado: Error en la petición fetch.';
+        debugStatus.style.color = '#ef4444'; // Rojo
+        debugData.textContent = 'Error: ' + error.message;
+        tbody.innerHTML = `<tr><td colspan="18" class="no-data-msg">Error al cargar los leads: ${error.message}</td></tr>`;
+      }
+    }
+
+    // Guardar Lead
+    document.getElementById('lead-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const boton = form.querySelector('button[type="submit"]');
+      const originalText = boton.innerHTML;
+      boton.disabled = true;
+      boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+      const leadData = {
+        nombre_cliente: form.nombre_cliente.value,
+        telefono_principal: form.telefono_principal.value,
+        telefono_alterno: form.telefono_alterno.value,
+        numero_cuenta: form.numero_cuenta.value,
+        autopago: form.autopago.value,
+        direccion: form.direccion.value,
+        tipo_servicios: form.tipo_servicios.value,
+        sistema: form.sistema.value,
+        riesgo: form.riesgo.value,
+        dia_venta: form.dia_venta.value,
+        dia_instalacion: form.dia_instalacion.value,
+        status: form.status.value,
+        servicios: form.servicios.value,
+        mercado: form.mercado.value,
+        supervisor: form.supervisor.value,
+        comentario: form.comentario.value,
+        motivo_llamada: form.motivo_llamada.value,
+        zip_code: form.zip_code.value,
+        creadoEn: new Date().toISOString()
+      };
+
+      try {
+        const response = await fetch('/api/leads', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(leadData)
+        });
+
+        const result = await response.json();
+
+        if (result.ok) {
+          Swal.fire('¡Guardado!', 'El lead ha sido guardado correctamente.', 'success');
+          form.reset();
+          // Cambiamos a la pestaña de Costumer para ver el resultado
+          document.getElementById('tabCostumer').click();
+        } else {
+          throw new Error(result.error || 'Error desconocido del servidor');
+        }
+      } catch (error) {
+        Swal.fire('Error', `No se pudo guardar el lead: ${error.message}`, 'error');
+      } finally {
+        boton.disabled = false;
+        boton.innerHTML = originalText;
+      }
+    });
+
+    // CSS para filas striped y acciones minimalistas
+    (function(){
+      const style = document.createElement('style');
+      style.innerHTML = `
+        .costumer-row-striped { background: #f8fbff; }
+        #costumer-tbody tr { transition: background 0.14s; }
+        #costumer-tbody tr:hover { background: #e3f2fd !important; }
+        .comentario-btn-minimal, .acciones-btn-minimal {
+          background: none; border: none; color: #1976d2; font-size: 1.05em; padding: 5px 7px; border-radius: 7px;
+          transition: background 0.18s, color 0.18s;
+          margin-right: 3px;
+          cursor: pointer;
+        }
+        .comentario-btn-minimal:hover, .acciones-btn-minimal:hover { background: #e3f2fd; color: #0d47a1; }
+        .acciones-btn-minimal.borrar { color: #e53935; }
+        .acciones-btn-minimal.borrar:hover { background: #ffebee; color: #b71c1c; }
+        .comentario-tooltip-minimal { margin-left:5px; color:#1976d2; cursor:pointer; position:relative; }
+        .comentario-tooltip-minimal:hover::after {
+          content: attr(data-tooltip);
+          white-space: pre-line;
+          position: absolute;
+          left: 50%;
+          top: 120%;
+          transform: translateX(-50%);
+          background: #fff;
+          color: #24334d;
+          border: 1px solid #b4c5d4;
+          border-radius: 7px;
+          padding: 10px 17px;
+          box-shadow: 0 4px 16px #1976d211;
+          font-size: 0.98em;
+          z-index: 20;
+          min-width: 180px;
+          max-width: 350px;
+          pointer-events: none;
+        }
+      `;
+      document.head.appendChild(style);
+    })();
+// --- Lógica para Lead Crm-Agente y Costumer ---
+async function fetchLeadsAgente() {
+  const res = await fetch('/api/leads', {
+    headers: {'Authorization': 'Bearer ' + (localStorage.getItem('token')||'')}
+  });
+  return await res.json();
+}
+
+function renderTablaLeadAgente(leads) {
+  if (!leads.length) {
+    document.getElementById('theadLeadAgente').innerHTML = '<tr><th>No hay leads almacenados</th></tr>';
+    document.getElementById('tbodyLeadAgente').innerHTML = '';
+    return;
+  }
+  // Obtener todos los encabezados únicos
+  const headers = Object.keys(leads.reduce((a, c) => Object.assign(a, c), {}));
+  document.getElementById('theadLeadAgente').innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+  document.getElementById('tbodyLeadAgente').innerHTML = leads.map(lead =>
+    '<tr>' + headers.map(h => `<td>${lead[h] ?? ''}</td>`).join('') + '</tr>'
+  ).join('');
+}
+
+function renderCostumerGroupedByDate(leads) {
+  if (!leads.length) {
+    document.getElementById('costumer-tbody').innerHTML = '<tr><td colspan="99">No hay clientes registrados.</td></tr>';
+    return;
+  }
+  // Agrupar por día (asumiendo campo creadoEn o fecha)
+  const parseDate = l => (l.creadoEn||l.fecha||l.FECHA||'').slice(0,10);
+  const grupos = {};
+  leads.forEach(l => {
+    const d = parseDate(l);
+    if (!grupos[d]) grupos[d]=[];
+    grupos[d].push(l);
+  });
+  // Ordenar días descendente
+  const dias = Object.keys(grupos).sort((a,b) => b.localeCompare(a));
+  let html = '';
+  dias.forEach(dia => {
+    html += `<tr><td colspan="99" style="background:#e3f2fd;font-weight:bold;">${dia}</td></tr>`;
+    grupos[dia].forEach(l => {
+      html += '<tr>' + Object.values(l).map(v=>`<td>${v??''}</td>`).join('') + '</tr>';
+    });
+  });
+  document.getElementById('costumer-tbody').innerHTML = html;
+}
+
+// --- Cambio de pestañas y renderizado ---
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', async e => {
+    e.preventDefault();
+    document.querySelectorAll('.dashboard-flex-row').forEach(s=>s.style.display='none');
+    const tab = btn.dataset.tab;
+    document.getElementById(tab).style.display = 'flex';
+    if(tab==='leadAgenteTab') {
+      const leads = await fetchLeadsAgente();
+      renderTablaLeadAgente(leads.sort((a,b)=>(b.creadoEn||b.fecha||'').localeCompare(a.creadoEn||a.fecha||'')));
+    }
+    if(tab==='costumerTab') {
+      const leads = await fetchLeadsAgente();
+      renderCostumerGroupedByDate(leads.sort((a,b)=>(b.creadoEn||b.fecha||'').localeCompare(a.creadoEn||a.fecha||'')));
+    }
+  });
+});
+// Al guardar un lead, refrescar ambas pestañas si están abiertas
+window.refrescarLeadsAgente = async function() {
+  const leads = await fetchLeadsAgente();
+  if(document.getElementById('leadAgenteTab').style.display!=='none')
+    renderTablaLeadAgente(leads.sort((a,b)=>(b.creadoEn||b.fecha||'').localeCompare(a.creadoEn||a.fecha||'')));
+  if(document.getElementById('costumerTab').style.display!=='none')
+    renderCostumerGroupedByDate(leads.sort((a,b)=>(b.creadoEn||b.fecha||'').localeCompare(a.creadoEn||a.fecha||'')));
+}
+// Llamar refresco inicial en costumer
+window.addEventListener('DOMContentLoaded', async ()=>{
+  const leads = await fetchLeadsAgente();
+  renderCostumerGroupedByDate(leads.sort((a,b)=>(b.creadoEn||b.fecha||'').localeCompare(a.creadoEn||a.fecha||'')));
+});
+</script>
+   <script src="js/core/auth-check.js"></script>
+   <script src="js/core/login.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+   <script src="js/core/graficas.js"></script>
+   <script src="js/core/costumer-comments.js"></script>
+</body>
+ </html>
