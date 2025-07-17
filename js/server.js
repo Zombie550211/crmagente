@@ -116,6 +116,36 @@ app.post("/guardar-lead", (req, res) => {
       datos = XLSX.utils.sheet_to_json(hoja);
     }
 
+    // --- Validación de duplicados (robusta y definitiva) ---
+    const ahora = new Date();
+    const dosDiasMs = 2 * 24 * 60 * 60 * 1000;
+    let duplicadosDebug = [];
+    const normalizar = v => (typeof v === 'string' ? v.trim().toLowerCase() : (v||''));
+    const esDuplicado = datos.some(lead => {
+      // Normalizamos campos clave
+      const telA = normalizar(lead["NÚMERO"]);
+      const telB = normalizar(nuevoLead["NÚMERO"]);
+      const cuentaA = normalizar(lead["CUENTA"]);
+      const cuentaB = normalizar(nuevoLead["CUENTA"]);
+      const prodA = normalizar(lead["SERVICIO"]);
+      const prodB = normalizar(nuevoLead["SERVICIO"]);
+      // Comparamos fechas (si existen y son válidas)
+      let fechaLead = new Date(lead["FECHA"]);
+      if (isNaN(fechaLead)) return false;
+      const dentroDe2Dias = Math.abs(ahora - fechaLead) < dosDiasMs;
+      // Debug: guarda info de comparación
+      duplicadosDebug.push({telA, telB, cuentaA, cuentaB, prodA, prodB, fechaLead, dentroDe2Dias});
+      // Consideramos duplicado si coincide teléfono y producto, o cuenta y producto, en los últimos 2 días
+      return ((telA && telA === telB && prodA === prodB && dentroDe2Dias) || (cuentaA && cuentaA === cuentaB && prodA === prodB && dentroDe2Dias));
+    });
+    console.log('▶️ POST recibido a /guardar-lead:', nuevoLead);
+    if (esDuplicado) {
+      console.warn('⛔ Lead duplicado detectado. Comparaciones:', duplicadosDebug);
+      return res.status(400).json({ ok: false, error: "Este lead ya fue registrado recientemente. Verifica antes de guardar." });
+    } else {
+      console.log('✅ Lead NO duplicado. Comparaciones:', duplicadosDebug);
+    }
+
     datos.push(nuevoLead);
 
     // Ordenar por FECHA descendente
