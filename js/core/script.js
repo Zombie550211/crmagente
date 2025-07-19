@@ -126,6 +126,8 @@ async function cargarDatosDesdeServidor() {
 
 // Renderizado profesional y alineado de la tabla Costumer
 function renderCostumerTable(leads) {
+  console.log('RENDER COSTUMER TABLE', leads);
+  window.ultimaListaLeads = leads;
   const tbody = document.getElementById('costumer-tbody');
   tbody.innerHTML = '';
   if (!leads || leads.length === 0) {
@@ -156,9 +158,9 @@ function renderCostumerTable(leads) {
         <td class="td-nowrap" title="${lead.zip_code || ''}">${lead.zip_code || ''}</td>
         <td class="td-nowrap" title="${lead.puntaje !== undefined ? lead.puntaje : 0}">${lead.puntaje !== undefined ? lead.puntaje : 0}</td>
         <td class="td-ellipsis">
-          ${Array.isArray(lead.comentarios_venta) && lead.comentarios_venta.length > 0
-            ? `<button class='comentarios-btn' onclick='toggleComentariosPanel(${idx})' title='Ver comentarios'>${lead.comentarios_venta[lead.comentarios_venta.length-1].texto.split("\n")[0].slice(0,40)}${lead.comentarios_venta[lead.comentarios_venta.length-1].texto.length>40?'...':''}</button>`
-            : `<button class='comentarios-btn' onclick='toggleComentariosPanel(${idx})'>Añadir comentario</button>`}
+          <button class='comentarios-btn' onclick='toggleComentariosPanel(${idx})' title='Ver o añadir comentarios'>
+            <i class="fas fa-comment-dots"></i>
+          </button>
         </td>
         <td class="td-nowrap">
           <button class="costumer-action-btn edit" title="Editar cliente" onclick="editarClienteModal('${lead._id || ''}')" ${!window.usuario_actual || !['admin','BO'].includes(window.usuario_actual.rol) ? 'disabled' : ''}>
@@ -174,8 +176,23 @@ function renderCostumerTable(leads) {
           <div style="font-weight:600;color:#1976d2;margin-bottom:0.5em;">Comentarios</div>
           <div>
             ${(Array.isArray(lead.comentarios_venta) && lead.comentarios_venta.length > 0)
-              ? lead.comentarios_venta.map(com => `<div class='comentario-item'><div class='comentario-meta'>${com.autor} ${com.fecha}</div>${com.texto}</div>`).join('')
-              : '<div class="comentario-item" style="color:#888;">Sin comentarios previos.</div>'}
+  ? lead.comentarios_venta.map((com, cidx) => `<div class='comentario-item'>
+    <div class='comentario-meta'>
+      <span class='comentario-autor'>${com.autor}</span>
+      <span class='comentario-fecha'>${com.fecha}</span>
+      ${window.usuario_actual && (window.usuario_actual.nombre === com.autor || window.usuario_actual.rol === 'admin') ? `
+        <button class='comentario-btn editar' title='Editar comentario' onclick='iniciarEdicionComentario(${idx},${cidx})'><i class="fas fa-pen"></i></button>
+        <button class='comentario-btn borrar' title='Borrar comentario' onclick='confirmarBorrarComentario(${idx},${cidx})'><i class="fas fa-trash"></i></button>
+      ` : ''}
+    </div>
+    <div class='comentario-texto' id='comentario-texto-${idx}-${cidx}'>${com.texto}</div>
+    <div class='comentario-edicion' id='comentario-edicion-${idx}-${cidx}' style='display:none;'>
+      <textarea id='editar-comentario-textarea-${idx}-${cidx}' maxlength='300'>${com.texto}</textarea>
+      <button class='comentario-btn guardar' title='Guardar edición' onclick='guardarEdicionComentario(${idx},${cidx})'><i class="fas fa-check"></i></button>
+      <button class='comentario-btn cancelar' title='Cancelar' onclick='cancelarEdicionComentario(${idx},${cidx})'><i class="fas fa-times"></i></button>
+    </div>
+  </div>`).join('')
+  : '<div class="comentario-item" style="color:#888;">Sin comentarios previos.</div>'}
           </div>
           <form class="nuevo-comentario-form" onsubmit="event.preventDefault(); enviarNuevoComentario(${idx}, '${lead._id || ''}')">
             <textarea id="nuevo-comentario-textarea-${idx}" maxlength="300" placeholder="Escribe un nuevo comentario..."></textarea>
