@@ -182,7 +182,7 @@ document.getElementById('comentarioForm').onsubmit = async function(e) {
 // --- Logout ---
 function logout() {
   localStorage.clear();
-  window.location.href = "login.html";
+  // Redirección a login deshabilitada
 }
 
 // --- Inicialización ---

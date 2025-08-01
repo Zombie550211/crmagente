@@ -8,85 +8,30 @@ const XLSX = require("xlsx");
 const app = express();
 const PORT = 3000;
 
-// Usuarios simulados
-const usuarios = [
-  { username: "admin", password: "1234" },
-  { username: "superadmin", password: "mipass2025", rol: "admin" },
-  { username: "admin@crm.com", password: "admin2025", rol: "admin" }
-];
-
 // Middlewares
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/login", express.static(path.join(__dirname, "public", "login")));
 
-// Sesiones
-app.use(
-  session({
-    secret: "crm-secret-key",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-
-// Middleware autenticación
-function protegerRuta(req, res, next) {
-  if (req.session.usuario) {
-    next();
-  } else {
-    res.redirect("/login/login.html");
-  }
+// Middleware de ruta sin autenticación
+function permitirTodo(req, res, next) {
+  next();
 }
 
 // Rutas
-app.get("/", (req, res) => res.redirect("/login/login.html"));
-app.get("/login.html", (req, res) => res.redirect("/login/login.html"));
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "dashboard.html")));
 app.get("/login/login.html", (req, res) =>
   res.sendFile(path.join(__dirname, "public", "login", "login.html"))
 );
 app.get("/login/register.html", (req, res) =>
   res.sendFile(path.join(__dirname, "public", "login", "register.html"))
 );
-app.get("/lead.html", protegerRuta, (req, res) =>
+app.get("/lead.html", permitirTodo, (req, res) =>
   res.sendFile(path.join(__dirname, "public", "lead.html"))
 );
-app.get("/costumer.html", protegerRuta, (req, res) =>
+app.get("/costumer.html", permitirTodo, (req, res) =>
   res.sendFile(path.join(__dirname, "public", "costumer.html"))
 );
-
-// Login
-app.post("/api/login", (req, res) => {
-  const { username, password } = req.body;
-  const user = usuarios.find(
-    (u) => u.username === username && u.password === password
-  );
-  if (user) {
-    req.session.usuario = user.username;
-    res.json({ ok: true });
-  } else {
-    res.status(401).json({ ok: false, mensaje: "Credenciales incorrectas" });
-  }
-});
-
-// Logout
-app.post("/api/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/login/login.html");
-  });
-});
-
-// Registro
-app.post("/api/register", (req, res) => {
-  const { username, password } = req.body;
-  if (usuarios.find((u) => u.username === username)) {
-    return res
-      .status(400)
-      .json({ ok: false, mensaje: "Usuario ya existe" });
-  }
-  usuarios.push({ username, password });
-  res.json({ ok: true });
-});
 
 // ✅ GUARDAR LEAD COMPLETO Y ORDENADO
 app.post("/guardar-lead", (req, res) => {
